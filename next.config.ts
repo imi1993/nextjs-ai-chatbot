@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/**': ['./lib/studio/media/fonts/**'],
   },
-  experimental: {
-    ppr: true,
-  },
   images: {
     remotePatterns: [
       {
