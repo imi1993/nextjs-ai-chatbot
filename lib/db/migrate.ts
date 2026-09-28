@@ -8,11 +8,13 @@ config({
 });
 
 const runMigrate = async () => {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error('POSTGRES_URL is not defined');
+  // Neon on the Vercel Marketplace may only set DATABASE_URL.
+  const url = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('POSTGRES_URL (or DATABASE_URL) is not defined');
   }
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
+  const connection = postgres(url, { max: 1 });
   const db = drizzle(connection);
 
   console.log('⏳ Running migrations...');

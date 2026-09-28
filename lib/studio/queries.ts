@@ -7,7 +7,9 @@ import postgres from 'postgres';
 import { studioPost, type StudioPost, user } from '../db/schema';
 
 // biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+const client = postgres(
+  (process.env.POSTGRES_URL ?? process.env.DATABASE_URL)!,
+);
 const db = drizzle(client);
 
 export type PostStatus = StudioPost['status'];
