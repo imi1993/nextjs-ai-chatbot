@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS "StudioPost_user_status_idx" ON "StudioPost" USING btree ("userId","status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "StudioPost_user_slot_idx" ON "StudioPost" USING btree ("userId","scheduledAt");

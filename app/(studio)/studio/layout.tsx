@@ -1,25 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Cormorant_Garamond, Manrope } from 'next/font/google';
 
+import { sans, serif } from '@/lib/studio/fonts';
 import { StudioTabs } from './tabs';
 import './studio.css';
 
 export const metadata: Metadata = {
   title: 'harmoniq ai · Le Studio',
 };
-
-const serif = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  variable: '--st-serif',
-});
-
-const sans = Manrope({
-  subsets: ['latin'],
-  variable: '--st-sans',
-});
 
 export default function StudioLayout({
   children,

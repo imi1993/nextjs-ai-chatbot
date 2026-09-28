@@ -10,7 +10,10 @@ export function PostCard({ post }: { post: StudioPost }) {
   const [title, setTitle] = useState(post.title);
   const [body, setBody] = useState(post.body);
   const [pending, startTransition] = useTransition();
+  const [gone, setGone] = useState(false);
   const dirty = title !== post.title || body !== post.body;
+
+  if (gone) return null;
 
   return (
     <article className={`st-prop ${post.account}`}>
@@ -38,12 +41,13 @@ export function PostCard({ post }: { post: StudioPost }) {
             type="button"
             className="st-btn ok"
             disabled={pending}
-            onClick={() =>
+            onClick={() => {
+              setGone(true);
               startTransition(async () => {
                 if (dirty) await saveAction(post.id, title, body);
                 await approveAction(post.id, post.account);
-              })
-            }
+              });
+            }}
           >
             ✓ Valider et programmer
           </button>
@@ -61,7 +65,10 @@ export function PostCard({ post }: { post: StudioPost }) {
             type="button"
             className="st-btn no"
             disabled={pending}
-            onClick={() => startTransition(() => rejectAction(post.id))}
+            onClick={() => {
+              setGone(true);
+              startTransition(() => rejectAction(post.id));
+            }}
           >
             ✕ Refuser
           </button>

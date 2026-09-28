@@ -64,6 +64,13 @@
       "when": 1790602062979,
       "tag": "0008_studio_publish",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790602393313,
+      "tag": "0009_studio_indexes",
+      "breakpoints": true
     }
   ]
 }
