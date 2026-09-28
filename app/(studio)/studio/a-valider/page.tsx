@@ -3,8 +3,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/app/(auth)/auth';
 import { listPostsByStatus } from '@/lib/studio/queries';
 import { PostCard } from '../post-card';
-import { PlanButton } from '../plan-button';
-import { ProposeForm } from '../propose-form';
+import { ReviewTools } from '../review-tools';
 
 export default async function InboxPage() {
   const session = await auth();
@@ -16,25 +15,40 @@ export default async function InboxPage() {
   );
 
   return (
-    <>
-      <div className="st-h2">
-        <h2>À valider</h2>
-        <p>
-          Claude prépare, vous décidez. Rien n’est publié sans votre accord.
-        </p>
-      </div>
-      <PlanButton />
-      <ProposeForm />
-      <div className="st-stack">
-        {posts.length === 0 ? (
-          <p className="st-empty">
-            Aucune proposition en attente. Touchez « Préparer maintenant » ou
-            demandez un contenu précis ci-dessus.
+    <div className="st-page">
+      <header className="st-pagehead split">
+        <div>
+          <p className="st-kick">Revue</p>
+          <h1>À valider</h1>
+          <p className="st-lede">
+            {posts.length === 0
+              ? 'Aucune proposition en attente.'
+              : `${posts.length} proposition${posts.length > 1 ? 's' : ''}, dans l’ordre de publication. Rien ne part sans votre accord.`}
           </p>
-        ) : (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
-        )}
-      </div>
-    </>
+        </div>
+        <ReviewTools />
+      </header>
+
+      {posts.length === 0 ? (
+        <div className="st-emptystate">
+          <h2>Tout est à jour.</h2>
+          <p>
+            Chaque matin, Claude prépare les créneaux libres des deux prochaines
+            semaines : lundi un post, mardi une vidéo, jeudi un carrousel ou un
+            visuel. Vous pouvez aussi lancer la préparation maintenant, ou
+            demander un contenu précis.
+          </p>
+        </div>
+      ) : (
+        <div className="st-reviews">
+          {posts.map((post) => (
+            <PostCard
+              key={`${post.id}-${new Date(post.updatedAt).getTime()}`}
+              post={post}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

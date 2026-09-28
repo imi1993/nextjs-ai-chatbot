@@ -79,3 +79,46 @@ export function formatSlot(date: Date) {
     minute: '2-digit',
   }).format(date);
 }
+
+/** Every Monday, Tuesday and Thursday 8:30 slot from `after` for `days` days. */
+export function upcomingSlots(after: Date, days: number) {
+  const end = after.getTime() + days * 24 * 3600 * 1000;
+  const slots: Array<Date> = [];
+  for (;;) {
+    const slot = nextFreeSlot(after, slots);
+    if (!slot || slot.getTime() > end) return slots;
+    slots.push(slot);
+  }
+}
+
+/** "Jeu. 1 oct." */
+export function formatDayShort(date: Date) {
+  const text = new Intl.DateTimeFormat('fr-FR', {
+    timeZone: TIME_ZONE,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(date);
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** "lundi 28 septembre" */
+export function formatDayLong(date: Date) {
+  return new Intl.DateTimeFormat('fr-FR', {
+    timeZone: TIME_ZONE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(date);
+}
+
+/** "dans 17 h", "dans 3 jours", "demain" style, from `now`. */
+export function formatFromNow(date: Date, now = new Date()) {
+  const minutes = Math.round((date.getTime() - now.getTime()) / 60000);
+  if (minutes < 0) return 'passé';
+  if (minutes < 60) return `dans ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `dans ${hours} h`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? 'demain' : `dans ${days} jours`;
+}

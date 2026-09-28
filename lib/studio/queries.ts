@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, desc, eq, gte, inArray, lt } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -18,6 +18,14 @@ export async function listPostsByStatus(userId: string, status: PostStatus) {
     .from(studioPost)
     .where(and(eq(studioPost.userId, userId), eq(studioPost.status, status)))
     .orderBy(desc(studioPost.createdAt));
+}
+
+export async function countPostsByStatus(userId: string, status: PostStatus) {
+  const [row] = await db
+    .select({ n: count() })
+    .from(studioPost)
+    .where(and(eq(studioPost.userId, userId), eq(studioPost.status, status)));
+  return row?.n ?? 0;
 }
 
 export async function listPostsBetween(userId: string, from: Date, to: Date) {

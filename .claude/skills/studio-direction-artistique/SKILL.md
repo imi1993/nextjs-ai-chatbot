@@ -28,4 +28,7 @@ description: Use when creating or changing Studio visuals, carousel slides, the 
 
 ## UI (studio.css)
 - All classes start with `st-`. Tokens are CSS variables on `.studio`, with dark overrides under `.dark .studio`.
-- Mobile first at 16 px gutter under 760 px; no horizontal scroll; tap targets at least 44 px.
+- Shell: sidebar navigation from 1024 px; below that a glass top bar and a bottom tab bar within thumb reach (with a solid fallback when `backdrop-filter` or transparency is unavailable).
+- Icons come from `app/(studio)/studio/icons.tsx` (one 1.6-stroke line set); never use emoji or text glyphs as icons.
+- One primary action per view (ink button). Gold is for accents and the proposal action, and statuses use the ok and warn tokens.
+- Mobile first at 16 px gutter; no horizontal scroll; tap targets at least 44 px. Respect `prefers-reduced-motion`.
