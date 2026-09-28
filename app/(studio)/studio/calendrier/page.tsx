@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { ACCOUNTS } from '@/lib/studio/brand';
+import { ACCOUNTS, KIND_ICONS } from '@/lib/studio/brand';
 import { dayKey } from '@/lib/studio/dates';
 import { monthPosts } from '../actions';
 
@@ -106,7 +106,7 @@ export default async function CalendarPage({
                   href="/studio/a-valider"
                   className={`st-chip ${p.account}${p.status === 'pending' ? ' pending' : ''}`}
                 >
-                  {p.title}
+                  {KIND_ICONS[p.kind]} {p.title}
                 </Link>
               ))}
             </div>

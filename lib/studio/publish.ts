@@ -1,63 +1,149 @@
 import 'server-only';
 
-import type { StudioPost } from '../db/schema';
+import { put } from '@vercel/blob';
 
-/**
- * Schedules an approved post on LinkedIn: the personal account through
- * Typefully, the recruitment account through Buffer. Returns null when the
- * service's key is not configured, so the post stays scheduled in the Studio
- * only.
- */
-export async function schedulePost(
-  post: Pick<StudioPost, 'account' | 'title' | 'body'>,
-  at: Date,
-): Promise<{ externalId: string } | null> {
-  return post.account === 'perso'
-    ? scheduleOnTypefully(post, at)
-    : scheduleOnBuffer(post, at);
+import type { StudioPost } from '../db/schema';
+import { buildMediaFile, type MediaFile } from './media/assets';
+
+type Publishable = Pick<
+  StudioPost,
+  'id' | 'account' | 'kind' | 'title' | 'body' | 'media'
+>;
+
+export function publishingConfigured(account: StudioPost['account']) {
+  return account === 'perso'
+    ? Boolean(
+        process.env.TYPEFULLY_API_KEY && process.env.TYPEFULLY_SOCIAL_SET_ID,
+      )
+    : Boolean(
+        process.env.BUFFER_ACCESS_TOKEN &&
+          process.env.BUFFER_LINKEDIN_CHANNEL_ID,
+      );
 }
 
-async function scheduleOnTypefully(
-  post: Pick<StudioPost, 'title' | 'body'>,
+/**
+ * Schedules an approved post on LinkedIn, with its visual, carousel or video:
+ * the personal account through Typefully, the second account through Buffer.
+ * Returns null when the service's key is not configured.
+ */
+export async function schedulePost(
+  post: Publishable,
   at: Date,
-) {
-  const key = process.env.TYPEFULLY_API_KEY;
-  const socialSetId = process.env.TYPEFULLY_SOCIAL_SET_ID;
-  if (!key || !socialSetId) return null;
+): Promise<{ externalId: string } | null> {
+  if (!publishingConfigured(post.account)) return null;
+  const file = await buildMediaFile(post);
+  return post.account === 'perso'
+    ? scheduleOnTypefully(post, at, file)
+    : scheduleOnBuffer(post, at, file);
+}
 
+/* ---------- Typefully ---------- */
+
+const TYPEFULLY = 'https://api.typefully.com/v2/social-sets';
+
+async function typefully(path: string, init?: RequestInit) {
   const res = await fetch(
-    `https://api.typefully.com/v2/social-sets/${socialSetId}/drafts`,
+    `${TYPEFULLY}/${process.env.TYPEFULLY_SOCIAL_SET_ID}${path}`,
     {
-      method: 'POST',
+      ...init,
       headers: {
-        Authorization: `Bearer ${key}`,
+        Authorization: `Bearer ${process.env.TYPEFULLY_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        draft_title: post.title,
-        platforms: {
-          linkedin: { enabled: true, posts: [{ text: post.body }] },
-        },
-        publish_at: at.toISOString(),
-      }),
     },
   );
   if (!res.ok) {
     throw new Error(`Typefully ${res.status} : ${await res.text()}`);
   }
-  const draft = await res.json();
+  return res.json();
+}
+
+async function uploadToTypefully(file: MediaFile) {
+  const upload = await typefully('/media/upload', {
+    method: 'POST',
+    body: JSON.stringify({ file_name: file.name }),
+  });
+  // The presigned URL must receive the raw bytes with no extra headers.
+  const put = await fetch(upload.upload_url, {
+    method: 'PUT',
+    body: new Uint8Array(file.bytes),
+  });
+  if (!put.ok)
+    throw new Error(`Typefully : envoi du média refusé (${put.status}).`);
+
+  for (let i = 0; i < 30; i++) {
+    const media = await typefully(`/media/${upload.media_id}`);
+    if (media.status === 'ready') return String(upload.media_id);
+    if (media.status === 'failed') {
+      throw new Error('Typefully n’a pas pu traiter le média.');
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  throw new Error('Typefully traite encore le média. Nouvel essai plus tard.');
+}
+
+async function scheduleOnTypefully(
+  post: Publishable,
+  at: Date,
+  file: MediaFile | null,
+) {
+  const mediaIds = file ? [await uploadToTypefully(file)] : [];
+  const draft = await typefully('/drafts', {
+    method: 'POST',
+    body: JSON.stringify({
+      draft_title: post.title,
+      platforms: {
+        linkedin: {
+          enabled: true,
+          posts: [{ text: post.body, media_ids: mediaIds }],
+        },
+      },
+      publish_at: at.toISOString(),
+    }),
+  });
   return { externalId: String(draft.id) };
 }
 
-async function scheduleOnBuffer(post: Pick<StudioPost, 'body'>, at: Date) {
-  const token = process.env.BUFFER_ACCESS_TOKEN;
-  const channelId = process.env.BUFFER_LINKEDIN_CHANNEL_ID;
-  if (!token || !channelId) return null;
+/* ---------- Buffer ---------- */
 
+async function host(name: string, bytes: Buffer) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error(
+      'Stockage des médias non configuré (Vercel Blob) : Buffer a besoin d’une adresse publique.',
+    );
+  }
+  const blob = await put(`studio/${name}`, bytes, {
+    access: 'public',
+    addRandomSuffix: true,
+  });
+  return blob.url;
+}
+
+async function bufferAssets(post: Publishable, file: MediaFile | null) {
+  if (!file) return [];
+  const url = await host(file.name, file.bytes);
+  if (file.type === 'image') {
+    return [{ image: { url, metadata: { altText: post.title } } }];
+  }
+  if (file.type === 'video') {
+    return [{ video: { url, metadata: { title: post.title } } }];
+  }
+  const thumbnailUrl = await host(
+    file.name.replace('.pdf', '.png'),
+    file.cover as Buffer,
+  );
+  return [{ document: { url, title: post.title, thumbnailUrl } }];
+}
+
+async function scheduleOnBuffer(
+  post: Publishable,
+  at: Date,
+  file: MediaFile | null,
+) {
   const res = await fetch('https://api.buffer.com', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${process.env.BUFFER_ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -69,11 +155,12 @@ async function scheduleOnBuffer(post: Pick<StudioPost, 'body'>, at: Date) {
       }`,
       variables: {
         input: {
-          channelId,
+          channelId: process.env.BUFFER_LINKEDIN_CHANNEL_ID,
           text: post.body,
           schedulingType: 'automatic',
           mode: 'customScheduled',
           dueAt: at.toISOString(),
+          assets: await bufferAssets(post, file),
         },
       },
     }),

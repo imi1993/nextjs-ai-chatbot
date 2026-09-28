@@ -1,0 +1,1 @@
+ALTER TABLE "StudioPost" ADD COLUMN "media" json;

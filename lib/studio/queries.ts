@@ -4,7 +4,7 @@ import { and, asc, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import { studioPost, type StudioPost } from '../db/schema';
+import { studioPost, type StudioPost, user } from '../db/schema';
 
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
@@ -37,7 +37,7 @@ export async function listPostsBetween(userId: string, from: Date, to: Date) {
 export async function createPost(
   values: Pick<
     StudioPost,
-    'userId' | 'account' | 'kind' | 'title' | 'body' | 'rationale'
+    'userId' | 'account' | 'kind' | 'title' | 'body' | 'rationale' | 'media'
   > & { scheduledAt?: Date | null },
 ) {
   const [row] = await db.insert(studioPost).values(values).returning();
@@ -52,10 +52,12 @@ export async function updatePost(
       StudioPost,
       | 'title'
       | 'body'
+      | 'rationale'
       | 'status'
       | 'scheduledAt'
       | 'externalId'
       | 'publishError'
+      | 'media'
     >
   >,
 ) {
@@ -70,4 +72,12 @@ export async function getPosts(userId: string, ids: Array<string>) {
     .select()
     .from(studioPost)
     .where(and(eq(studioPost.userId, userId), inArray(studioPost.id, ids)));
+}
+
+export async function getUserIdByEmail(email: string) {
+  const [row] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.email, email));
+  return row?.id ?? null;
 }

@@ -4,23 +4,93 @@ import { useState, useTransition } from 'react';
 
 import type { StudioPost } from '@/lib/db/schema';
 import { ACCOUNTS, KIND_LABELS } from '@/lib/studio/brand';
-import { approveAction, rejectAction, saveAction } from './actions';
+import { formatSlot } from '@/lib/studio/dates';
+import {
+  approveAction,
+  regenerateAction,
+  rejectAction,
+  saveAction,
+} from './actions';
+
+export function MediaPreview({ post }: { post: StudioPost }) {
+  const media = post.media;
+  const v = new Date(post.updatedAt).getTime();
+  const base = `/studio/media/${post.id}`;
+
+  if (post.kind === 'visual' && media?.visual) {
+    return (
+      // biome-ignore lint/nursery/noImgElement: generated image, no optimisation needed
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        className="st-media"
+        src={`${base}/visual.png?v=${v}`}
+        alt={media.visual.headline}
+      />
+    );
+  }
+  if (post.kind === 'carousel' && media?.slides?.length) {
+    return (
+      <div className="st-slides">
+        {media.slides.map((s, i) => (
+          // biome-ignore lint/nursery/noImgElement: generated image, no optimisation needed
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={s.title}
+            src={`${base}/slide-${i + 1}.png?v=${v}`}
+            alt={s.title}
+            loading="lazy"
+          />
+        ))}
+      </div>
+    );
+  }
+  if (post.kind === 'video' && media?.video) {
+    const video = media.video;
+    if (video.url) {
+      return (
+        <video
+          className="st-media"
+          src={video.url}
+          controls
+          playsInline
+          preload="metadata"
+        />
+      );
+    }
+    return (
+      <div className="st-video-wait">
+        <div className="st-kick">
+          {video.status === 'processing'
+            ? 'Votre jumeau enregistre la vidéo…'
+            : video.status === 'failed'
+              ? 'La vidéo n’a pas pu être fabriquée'
+              : 'Texte de la vidéo · fabriquée dès votre validation'}
+        </div>
+        <p>{video.script}</p>
+      </div>
+    );
+  }
+  return null;
+}
 
 export function PostCard({ post }: { post: StudioPost }) {
   const [title, setTitle] = useState(post.title);
   const [body, setBody] = useState(post.body);
-  const [pending, startTransition] = useTransition();
   const [gone, setGone] = useState(false);
+  const [pending, startTransition] = useTransition();
   const dirty = title !== post.title || body !== post.body;
 
   if (gone) return null;
 
   return (
-    <article className={`st-prop ${post.account}`}>
+    <article className={`st-prop ${post.account}`} aria-busy={pending}>
       <div className="st-prop-main">
         <div className="st-meta">
           <span className={`st-dot ${post.account}`} />
           {ACCOUNTS[post.account].label} · {KIND_LABELS[post.kind]}
+          {post.scheduledAt && (
+            <> · prévu {formatSlot(new Date(post.scheduledAt))}</>
+          )}
         </div>
         <input
           className="st-input st-prop-title"
@@ -45,7 +115,7 @@ export function PostCard({ post }: { post: StudioPost }) {
               setGone(true);
               startTransition(async () => {
                 if (dirty) await saveAction(post.id, title, body);
-                await approveAction(post.id, post.account);
+                await approveAction(post.id);
               });
             }}
           >
@@ -60,6 +130,14 @@ export function PostCard({ post }: { post: StudioPost }) {
             }
           >
             ✎ Enregistrer
+          </button>
+          <button
+            type="button"
+            className="st-btn ghost"
+            disabled={pending}
+            onClick={() => startTransition(() => regenerateAction(post.id))}
+          >
+            {pending ? 'Claude réécrit…' : '↻ Autre proposition'}
           </button>
           <button
             type="button"
@@ -84,6 +162,7 @@ export function PostCard({ post }: { post: StudioPost }) {
             </div>
           </div>
           <p>{body}</p>
+          <MediaPreview post={post} />
         </div>
       </div>
     </article>

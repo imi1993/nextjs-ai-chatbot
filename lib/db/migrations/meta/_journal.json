@@ -71,6 +71,13 @@
       "when": 1790602393313,
       "tag": "0009_studio_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790602703568,
+      "tag": "0010_studio_media",
+      "breakpoints": true
     }
   ]
 }

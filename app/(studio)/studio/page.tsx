@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { after } from 'next/server';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/app/(auth)/auth';
-import { ACCOUNTS, KIND_LABELS } from '@/lib/studio/brand';
+import { ACCOUNTS, KIND_ICONS, KIND_LABELS } from '@/lib/studio/brand';
 import { dayKey, formatSlot } from '@/lib/studio/dates';
+import { runAutopilot } from '@/lib/studio/plan';
 import { listPostsBetween, listPostsByStatus } from '@/lib/studio/queries';
 import type { StudioPost } from '@/lib/db/schema';
 
@@ -30,6 +32,8 @@ export default async function TodayPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/guest');
   const userId = session.user.id;
+  // Check videos being made and send ready posts, without slowing the page.
+  after(() => runAutopilot(userId, { plan: false }).catch(console.error));
 
   const now = new Date();
   const in30Days = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
@@ -75,7 +79,9 @@ export default async function TodayPage() {
           ) : (
             pending.slice(0, 4).map((p) => (
               <Link key={p.id} href="/studio/a-valider" className="st-item">
-                <span className={`st-ic ${p.account}`}>¶</span>
+                <span className={`st-ic ${p.account}`}>
+                  {KIND_ICONS[p.kind]}
+                </span>
                 <span>
                   <b>{p.title}</b>
                   <small>
@@ -93,7 +99,9 @@ export default async function TodayPage() {
           ) : (
             next.slice(0, 4).map((p) => (
               <div key={p.id} className="st-item">
-                <span className={`st-ic ${p.account}`}>¶</span>
+                <span className={`st-ic ${p.account}`}>
+                  {KIND_ICONS[p.kind]}
+                </span>
                 <span>
                   <b>{p.title}</b>
                   <small>{formatSlot(p.scheduledAt as Date)}</small>

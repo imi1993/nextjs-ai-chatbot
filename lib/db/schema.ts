@@ -1,4 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm';
+import type { PostMedia } from '../studio/types';
 import {
   pgTable,
   varchar,
@@ -193,6 +194,7 @@ export const studioPost = pgTable(
     // Draft id in Typefully (perso) or post id in Buffer (reco).
     externalId: text('externalId'),
     publishError: text('publishError'),
+    media: json('media').$type<PostMedia>(),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
     updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   },
