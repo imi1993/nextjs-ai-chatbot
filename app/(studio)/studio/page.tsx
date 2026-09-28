@@ -5,6 +5,26 @@ import { auth } from '@/app/(auth)/auth';
 import { ACCOUNTS, KIND_LABELS } from '@/lib/studio/brand';
 import { dayKey, formatSlot } from '@/lib/studio/dates';
 import { listPostsBetween, listPostsByStatus } from '@/lib/studio/queries';
+import type { StudioPost } from '@/lib/db/schema';
+
+function PublishState({ post }: { post: StudioPost }) {
+  const service = post.account === 'perso' ? 'Typefully' : 'Buffer';
+  if (post.publishError) {
+    return (
+      <small className="st-state err">
+        Non programmé : {post.publishError}
+      </small>
+    );
+  }
+  if (post.externalId) {
+    return <small className="st-state ok">Programmé dans {service}</small>;
+  }
+  return (
+    <small className="st-state">
+      À programmer dans {service} (clé non configurée)
+    </small>
+  );
+}
 
 export default async function TodayPage() {
   const session = await auth();
@@ -77,6 +97,7 @@ export default async function TodayPage() {
                 <span>
                   <b>{p.title}</b>
                   <small>{formatSlot(p.scheduledAt as Date)}</small>
+                  <PublishState post={p} />
                 </span>
               </div>
             ))

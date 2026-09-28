@@ -14,7 +14,9 @@ export default async function InboxPage() {
     <>
       <div className="st-h2">
         <h2>À valider</h2>
-        <p>Claude prépare, vous décidez. Rien n’est publié sans votre accord.</p>
+        <p>
+          Claude prépare, vous décidez. Rien n’est publié sans votre accord.
+        </p>
       </div>
       <ProposeForm />
       <div className="st-stack">

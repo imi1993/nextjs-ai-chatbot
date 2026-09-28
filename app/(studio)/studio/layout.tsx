@@ -42,7 +42,7 @@ export default function StudioLayout({
         </div>
       </nav>
       <main className="st-w st-main">{children}</main>
-      <Link href="/" className="st-fab">
+      <Link href="/chat" className="st-fab">
         ✨ Claude
       </Link>
     </div>

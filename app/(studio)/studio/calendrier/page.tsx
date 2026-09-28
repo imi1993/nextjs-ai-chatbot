@@ -32,16 +32,21 @@ export default async function CalendarPage({
   const lead = (first.getUTCDay() + 6) % 7;
   const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const today = dayKey(new Date());
-  const cells = Array.from({ length: Math.ceil((lead + days) / 7) * 7 }, (_, i) => {
-    const d = i - lead + 1;
-    if (d < 1 || d > days) return null;
-    const key = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    return {
-      d,
-      key,
-      posts: posts.filter((p) => p.scheduledAt && dayKey(p.scheduledAt) === key),
-    };
-  });
+  const cells = Array.from(
+    { length: Math.ceil((lead + days) / 7) * 7 },
+    (_, i) => {
+      const d = i - lead + 1;
+      if (d < 1 || d > days) return null;
+      const key = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      return {
+        d,
+        key,
+        posts: posts.filter(
+          (p) => p.scheduledAt && dayKey(p.scheduledAt) === key,
+        ),
+      };
+    },
+  );
   const title = new Intl.DateTimeFormat('fr-FR', {
     month: 'long',
     year: 'numeric',
@@ -52,14 +57,25 @@ export default async function CalendarPage({
     <>
       <div className="st-h2">
         <h2>Calendrier</h2>
-        <p>Lundi, mardi et jeudi à 8 h 30. Chaque post validé prend le prochain créneau libre.</p>
+        <p>
+          Lundi, mardi et jeudi à 8 h 30. Chaque post validé prend le prochain
+          créneau libre.
+        </p>
       </div>
       <div className="st-monthbar">
-        <Link href={`?m=${shift(year, month, -1)}`} className="st-ib" aria-label="Mois précédent">
+        <Link
+          href={`?m=${shift(year, month, -1)}`}
+          className="st-ib"
+          aria-label="Mois précédent"
+        >
           ‹
         </Link>
         <h3>{title}</h3>
-        <Link href={`?m=${shift(year, month, 1)}`} className="st-ib" aria-label="Mois suivant">
+        <Link
+          href={`?m=${shift(year, month, 1)}`}
+          className="st-ib"
+          aria-label="Mois suivant"
+        >
           ›
         </Link>
       </div>
@@ -79,7 +95,10 @@ export default async function CalendarPage({
         ))}
         {cells.map((cell, i) =>
           cell ? (
-            <div key={cell.key} className={`st-cell${cell.key === today ? ' today' : ''}`}>
+            <div
+              key={cell.key}
+              className={`st-cell${cell.key === today ? ' today' : ''}`}
+            >
               <span className="st-num">{cell.d}</span>
               {cell.posts.map((p) => (
                 <Link

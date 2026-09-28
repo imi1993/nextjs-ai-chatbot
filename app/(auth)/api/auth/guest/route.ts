@@ -1,9 +1,13 @@
 import { signIn } from '@/app/(auth)/auth';
-import { isDevelopmentEnvironment } from '@/lib/constants';
+import { isDevelopmentEnvironment, studioOwnerEmail } from '@/lib/constants';
 import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  if (studioOwnerEmail) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   const { searchParams } = new URL(request.url);
   const redirectUrl = searchParams.get('redirectUrl') || '/';
 

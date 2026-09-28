@@ -125,3 +125,6 @@ textarea.st-input { line-height: 1.55; resize: vertical; }
   .st-dow { font-size: 9px; letter-spacing: 0.06em; padding: 8px 2px; }
 }
 .st-fab { position: fixed; right: 22px; bottom: 22px; z-index: 60; border-radius: 999px; padding: 15px 22px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #f0c782, #c9a0e6 60%, #a4aeeb); color: #111; box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.45); }
+.st-item small.st-state { display: block; font-weight: 700; font-size: 12.5px; }
+.st-state.ok { color: var(--st-ok); }
+.st-state.err { color: var(--st-warn); }

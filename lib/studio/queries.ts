@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -48,11 +48,26 @@ export async function updatePost(
   userId: string,
   id: string,
   values: Partial<
-    Pick<StudioPost, 'title' | 'body' | 'status' | 'scheduledAt'>
+    Pick<
+      StudioPost,
+      | 'title'
+      | 'body'
+      | 'status'
+      | 'scheduledAt'
+      | 'externalId'
+      | 'publishError'
+    >
   >,
 ) {
   await db
     .update(studioPost)
     .set({ ...values, updatedAt: new Date() })
     .where(and(eq(studioPost.id, id), eq(studioPost.userId, userId)));
+}
+
+export async function getPosts(userId: string, ids: Array<string>) {
+  return db
+    .select()
+    .from(studioPost)
+    .where(and(eq(studioPost.userId, userId), inArray(studioPost.id, ids)));
 }

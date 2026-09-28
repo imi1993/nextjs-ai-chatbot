@@ -187,6 +187,9 @@ export const studioPost = pgTable('StudioPost', {
     .notNull()
     .default('pending'),
   scheduledAt: timestamp('scheduledAt'),
+  // Draft id in Typefully (perso) or post id in Buffer (reco).
+  externalId: text('externalId'),
+  publishError: text('publishError'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });

@@ -41,7 +41,8 @@ export function dayKey(date: Date) {
 export function monthBounds(year: number, month: number) {
   return {
     from: parisTime(year, month, 1),
-    to: month === 12 ? parisTime(year + 1, 1, 1) : parisTime(year, month + 1, 1),
+    to:
+      month === 12 ? parisTime(year + 1, 1, 1) : parisTime(year, month + 1, 1),
   };
 }
 
@@ -50,7 +51,9 @@ export function nextFreeSlot(after: Date, taken: Array<Date>) {
   const takenDays = new Set(taken.map(dayKey));
   const start = parts(after);
   for (let i = 0; i < 120; i++) {
-    const noon = new Date(Date.UTC(start.year, start.month - 1, start.day + i, 12));
+    const noon = new Date(
+      Date.UTC(start.year, start.month - 1, start.day + i, 12),
+    );
     const slot = parisTime(
       noon.getUTCFullYear(),
       noon.getUTCMonth() + 1,
