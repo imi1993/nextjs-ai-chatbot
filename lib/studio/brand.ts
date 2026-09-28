@@ -6,13 +6,15 @@ export const ACCOUNTS: Record<
 > = {
   perso: {
     label: 'Contrôle documentaire',
-    subject: 'le pré-contrôle documentaire fournisseur',
+    subject:
+      'le pré-contrôle documentaire fournisseur : lecture des certificats et rapports, comparaison aux exigences, signalement des écarts, validation humaine',
     audience:
       'responsables qualité et industriels du nucléaire et de l’aéronautique',
   },
   reco: {
     label: 'Recrutement',
-    subject: 'l’automatisation du recrutement',
+    subject:
+      'la présélection des candidatures : lecture complète des CV, fiche candidat, aucune décision automatique',
     audience: 'DRH, sociétés d’ingénierie, cabinets de recrutement et PME',
   },
 };
@@ -33,4 +35,5 @@ export const brandPrompt = `Tu écris pour harmoniq ai, écrit toujours en minus
 Signature : « La précision, sans la répétition. » Principe : « L'automatisation prépare. L'humain décide. »
 Ton : luxe discret, éditorial, raffiné, sincère. Français soigné, phrases courtes, pas de jargon creux, pas d'emoji en rafale.
 Règles absolues : n'invente aucun chiffre, aucun client, aucun témoignage. Tout document simulé porte la mention « démonstration fictive ».
+Un compte = un seul sujet. Rien n'est publié sans la validation d'Imene.
 Offre : diagnostic à 2 500 € HT, puis pilote sur un périmètre limité, puis déploiement. Deux places pilotes à l'automne 2026.`;
