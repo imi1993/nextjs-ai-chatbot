@@ -39,7 +39,9 @@ import { ChatSDKError } from '../errors';
 // https://authjs.dev/reference/adapter/drizzle
 
 // biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+const client = postgres(
+  (process.env.POSTGRES_URL ?? process.env.DATABASE_URL)!,
+);
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {

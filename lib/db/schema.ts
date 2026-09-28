@@ -1,4 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm';
+import type { PostMedia } from '../studio/types';
 import {
   pgTable,
   varchar,
@@ -9,6 +10,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -168,3 +170,44 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const studioPost = pgTable(
+  'StudioPost',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    account: varchar('account', { enum: ['perso', 'reco'] }).notNull(),
+    kind: varchar('kind', { enum: ['post', 'carousel', 'video', 'visual'] })
+      .notNull()
+      .default('post'),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    rationale: text('rationale'),
+    status: varchar('status', {
+      enum: ['pending', 'approved', 'rejected', 'published'],
+    })
+      .notNull()
+      .default('pending'),
+    scheduledAt: timestamp('scheduledAt'),
+    // Draft id in Typefully (perso) or post id in Buffer (reco).
+    externalId: text('externalId'),
+    publishError: text('publishError'),
+    media: json('media').$type<PostMedia>(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    byStatus: index('StudioPost_user_status_idx').on(
+      table.userId,
+      table.status,
+    ),
+    bySlot: index('StudioPost_user_slot_idx').on(
+      table.userId,
+      table.scheduledAt,
+    ),
+  }),
+);
+
+export type StudioPost = InferSelectModel<typeof studioPost>;

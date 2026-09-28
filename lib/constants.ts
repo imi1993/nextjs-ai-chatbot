@@ -10,4 +10,8 @@ export const isTestEnvironment = Boolean(
 
 export const guestRegex = /^guest-\d+$/;
 
+// When set, the app is private: no guest sessions, and only this email can
+// create an account.
+export const studioOwnerEmail = process.env.STUDIO_OWNER_EMAIL?.toLowerCase();
+
 export const DUMMY_PASSWORD = generateDummyPassword();

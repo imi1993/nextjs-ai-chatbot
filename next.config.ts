@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: true,
+  // Brand fonts read from disk when rendering visuals and carousels.
+  outputFileTracingIncludes: {
+    '/**': ['./lib/studio/media/fonts/**'],
   },
   images: {
     remotePatterns: [

@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { guestRegex, isDevelopmentEnvironment } from './lib/constants';
+import {
+  guestRegex,
+  isDevelopmentEnvironment,
+  studioOwnerEmail,
+} from './lib/constants';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,7 +17,7 @@ export async function middleware(request: NextRequest) {
     return new Response('pong', { status: 200 });
   }
 
-  if (pathname.startsWith('/api/auth')) {
+  if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron')) {
     return NextResponse.next();
   }
 
@@ -22,6 +26,13 @@ export async function middleware(request: NextRequest) {
     secret: process.env.AUTH_SECRET,
     secureCookie: !isDevelopmentEnvironment,
   });
+
+  if (!token && studioOwnerEmail) {
+    if (['/login', '/register'].includes(pathname)) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
   if (!token) {
     const redirectUrl = encodeURIComponent(request.url);

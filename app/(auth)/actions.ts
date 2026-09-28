@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 
+import { studioOwnerEmail } from '@/lib/constants';
 import { createUser, getUser } from '@/lib/db/queries';
 
 import { signIn } from './auth';
@@ -60,6 +61,13 @@ export const register = async (
       email: formData.get('email'),
       password: formData.get('password'),
     });
+
+    if (
+      studioOwnerEmail &&
+      validatedData.email.toLowerCase() !== studioOwnerEmail
+    ) {
+      return { status: 'failed' };
+    }
 
     const [user] = await getUser(validatedData.email);
 

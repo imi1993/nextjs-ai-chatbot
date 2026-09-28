@@ -50,6 +50,34 @@
       "when": 1746118166211,
       "tag": "0006_marvelous_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790582741446,
+      "tag": "0007_studio_post",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790602062979,
+      "tag": "0008_studio_publish",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790602393313,
+      "tag": "0009_studio_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790602703568,
+      "tag": "0010_studio_media",
+      "breakpoints": true
     }
   ]
 }
