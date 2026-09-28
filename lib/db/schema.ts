@@ -168,3 +168,27 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const studioPost = pgTable('StudioPost', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  account: varchar('account', { enum: ['perso', 'reco'] }).notNull(),
+  kind: varchar('kind', { enum: ['post', 'carousel', 'video', 'visual'] })
+    .notNull()
+    .default('post'),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  rationale: text('rationale'),
+  status: varchar('status', {
+    enum: ['pending', 'approved', 'rejected', 'published'],
+  })
+    .notNull()
+    .default('pending'),
+  scheduledAt: timestamp('scheduledAt'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type StudioPost = InferSelectModel<typeof studioPost>;

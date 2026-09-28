@@ -19,6 +19,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'studio-model': artifactModel,
       },
     })
   : customProvider({
@@ -30,5 +31,6 @@ export const myProvider = isTestEnvironment
         }),
         'title-model': gateway.languageModel('xai/grok-2-1212'),
         'artifact-model': gateway.languageModel('xai/grok-2-1212'),
+        'studio-model': gateway.languageModel('anthropic/claude-sonnet-5'),
       },
     });
